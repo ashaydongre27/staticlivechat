@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Number to GitHub CSV</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .setup-section {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .setup-title {
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .setup-steps {
+            color: #78350f;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .setup-steps ol {
+            margin-left: 20px;
+        }
+
+        .setup-steps code {
+            background: #fde68a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .config-section {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: monospace;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-generate:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-save {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-save:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-load {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-load:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .result-timestamp {
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .csv-section {
+            margin-top: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .csv-container {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .csv-content {
+            font-family: 'Courier New', monospace;
+            color: #10b981;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .csv-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .csv-content::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 4px;
+        }
+
+        .csv-content::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 Random Number to GitHub CSV</h1>
+        <div class="subtitle">Store random numbers directly in your GitHub repository</div>
+
+        <div class="setup-section">
+            <div class="setup-title">📝 Setup Instructions:</div>
+            <div class="setup-steps">
+                <ol>
+                    <li>Create a Personal Access Token: <a href="https://github.com/settings/tokens/new" target="_blank">GitHub Settings → Developer Settings → Personal Access Tokens → Generate New Token (Classic)</a></li>
+                    <li>Select scope: <code>repo</code> (Full control of private repositories)</li>
+                    <li>Copy the token and paste it below</li>
+                    <li>Enter your GitHub username and repository name</li>
+                    <li>The CSV file will be created automatically at <code>data.csv</code></li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3 style="margin-bottom: 15px; color: #333;">⚙️ GitHub Configuration</h3>
+            
+            <div class="input-group">
+                <label for="githubToken">GitHub Personal Access Token:</label>
+                <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                <div class="help-text">Keep this secret! It's stored only in your browser.</div>
+            </div>
+
+            <div class="grid-2">
+                <div class="input-group">
+                    <label for="githubUsername">GitHub Username:</label>
+                    <input type="text" id="githubUsername" placeholder="yourusername">
+                </div>
+
+                <div class="input-group">
+                    <label for="githubRepo">Repository Name:</label>
+                    <input type="text" id="githubRepo" placeholder="my-random-numbers">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="csvFilePath">CSV File Path in Repo:</label>
+                <input type="text" id="csvFilePath" value="data.csv" placeholder="data.csv">
+                <div class="help-text">Default: data.csv (you can use paths like: data/numbers.csv)</div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3 style="margin-bottom: 15px; color: #333;">🎲 Number Range</h3>
+            <div class="grid-2">
+                <div class="input-group">
+                    <label for="minValue">Minimum Value:</label>
+                    <input type="number" id="minValue" value="1">
+                </div>
+
+                <div class="input-group">
+                    <label for="maxValue">Maximum Value:</label>
+                    <input type="number" id="maxValue" value="100">
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-load" onclick="loadFromGitHub()">📥 Load from GitHub</button>
+            <button class="btn-generate" onclick="generateNumber()">🎲 Generate Number</button>
+            <button class="btn-save" onclick="saveToGitHub()" id="saveBtn" disabled>💾 Save to GitHub</button>
+        </div>
+
+        <div id="statusDisplay"></div>
+        <div id="resultDisplay"></div>
+
+        <div class="stats" id="statsDisplay" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total Entries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgValue">0</div>
+                <div class="stat-label">Average</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="minGenerated">-</div>
+                <div class="stat-label">Min Generated</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="maxGenerated">-</div>
+                <div class="stat-label">Max Generated</div>
+            </div>
+        </div>
+
+        <div class="csv-section">
+            <div class="section-title">📊 CSV Data Preview</div>
+            <div class="csv-container">
+                <div class="csv-content" id="csvDisplay">
+                    <div class="empty-state">Load data from GitHub or generate new numbers to see CSV data here!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let currentSha = null; // For updating existing files on GitHub
+        let hasUnsavedChanges = false;
+
+        // Load config from localStorage
+        window.onload = function() {
+            const savedToken = localStorage.getItem('githubToken');
+            const savedUsername = localStorage.getItem('githubUsername');
+            const savedRepo = localStorage.getItem('githubRepo');
+            const savedPath = localStorage.getItem('csvFilePath');
+
+            if (savedToken) document.getElementById('githubToken').value = savedToken;
+            if (savedUsername) document.getElementById('githubUsername').value = savedUsername;
+            if (savedRepo) document.getElementById('githubRepo').value = savedRepo;
+            if (savedPath) document.getElementById('csvFilePath').value = savedPath;
+        };
+
+        function saveConfig() {
+            localStorage.setItem('githubToken', document.getElementById('githubToken').value);
+            localStorage.setItem('githubUsername', document.getElementById('githubUsername').value);
+            localStorage.setItem('githubRepo', document.getElementById('githubRepo').value);
+            localStorage.setItem('csvFilePath', document.getElementById('csvFilePath').value);
+        }
+
+        function getGitHubConfig() {
+            const token = document.getElementById('githubToken').value.trim();
+            const username = document.getElementById('githubUsername').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+            const filePath = document.getElementById('csvFilePath').value.trim();
+
+            if (!token || !username || !repo || !filePath) {
+                showStatus('Please fill in all GitHub configuration fields!', 'error');
+                return null;
+            }
+
+            saveConfig();
+            return { token, username, repo, filePath };
+        }
+
+        async function loadFromGitHub() {
+            const config = getGitHubConfig();
+            if (!config) return;
+
+            showStatus('Loading data from GitHub... <span class="loading"></span>', 'info');
+
+            try {
+                const url = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${config.filePath}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${config.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (response.status === 404) {
+                    showStatus('CSV file not found on GitHub. Generate numbers and save to create it!', 'warning');
+                    csvData = [];
+                    currentSha = null;
+                    updateCSVDisplay();
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                currentSha = data.sha;
+
+                // Decode base64 content
+                const content = atob(data.content);
+                
+                // Parse CSV
+                parseCSV(content);
+                updateCSVDisplay();
+                updateStats();
+                hasUnsavedChanges = false;
+                document.getElementById('saveBtn').disabled = true;
+
+                showStatus(`✅ Successfully loaded ${csvData.length} entries from GitHub!`, 'success');
+
+            } catch (error) {
+                showStatus(`❌ Error loading from GitHub: ${error.message}`, 'error');
+                console.error('Load error:', error);
+            }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            csvData = [];
+
+            // Skip header row
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // Parse CSV line (handle quoted timestamps)
+                const match = line.match(/^(\d+),(\d+),"(.+)"$/);
+                if (match) {
+                    csvData.push({
+                        index: parseInt(match[1]),
+                        number: parseInt(match[2]),
+                        timestamp: match[3]
+                    });
+                }
+            }
+        }
+
+        async function saveToGitHub() {
+            const config = getGitHubConfig();
+            if (!config) return;
+
+            if (csvData.length === 0) {
+                showStatus('No data to save!', 'warning');
+                return;
+            }
+
+            showStatus('Saving to GitHub... <span class="loading"></span>', 'info');
+
+            try {
+                // Create CSV content
+                let csvContent = 'Index,Number,Timestamp\n';
+                csvData.forEach(entry => {
+                    csvContent += `${entry.index},${entry.number},"${entry.timestamp}"\n`;
+                });
+
+                // Encode to base64
+                const encodedContent = btoa(unescape(encodeURIComponent(csvContent)));
+
+                const url = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${config.filePath}`;
+                
+                const requestBody = {
+                    message: `Update random numbers CSV - ${new Date().toLocaleString()}`,
+                    content: encodedContent,
+                    branch: 'main'
+                };
+
+                // If file exists, include sha for update
+                if (currentSha) {
+                    requestBody.sha = currentSha;
+                }
+
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${config.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `GitHub API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                currentSha = data.content.sha;
+                hasUnsavedChanges = false;
+                document.getElementById('saveBtn').disabled = true;
+
+                showStatus(`✅ Successfully saved to GitHub! <a href="${data.content.html_url}" target="_blank">View file</a>`, 'success');
+
+            } catch (error) {
+                showStatus(`❌ Error saving to GitHub: ${error.message}`, 'error');
+                console.error('Save error:', error);
+            }
+        }
+
+        function generateNumber() {
+            const min = parseInt(document.getElementById('minValue').value);
+            const max = parseInt(document.getElementById('maxValue').value);
+
+            if (min >= max) {
+                showStatus('⚠️ Minimum must be less than maximum!', 'error');
+                return;
+            }
+
+            const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+            const timestamp = new Date().toLocaleString();
+
+            const entry = {
+                index: csvData.length + 1,
+                number: randomNum,
+                timestamp: timestamp
+            };
+            csvData.push(entry);
+
+            displayResult(randomNum, timestamp);
+            updateCSVDisplay();
+            updateStats();
+            
+            hasUnsavedChanges = true;
+            document.getElementById('saveBtn').disabled = false;
+
+            showStatus('✅ Number generated! Click "Save to GitHub" to upload.', 'success');
+        }
+
+        function displayResult(number, timestamp) {
+            const resultDiv = document.getElementById('resultDisplay');
+            resultDiv.innerHTML = `
+                <div class="result">
+                    <div class="result-number">${number}</div>
+                    <div class="result-timestamp">Generated at: ${timestamp}</div>
+                </div>
+            `;
+        }
+
+        function updateCSVDisplay() {
+            const csvDisplay = document.getElementById('csvDisplay');
+
+            if (csvData.length === 0) {
+                csvDisplay.innerHTML = '<div class="empty-state">Load data from GitHub or generate new numbers to see CSV data here!</div>';
+                return;
+            }
+
+            let csvString = 'Index,Number,Timestamp\n';
+            csvData.forEach(entry => {
+                csvString += `${entry.index},${entry.number},"${entry.timestamp}"\n`;
+            });
+
+            csvDisplay.textContent = csvString;
+        }
+
+        function updateStats() {
+            const statsDisplay = document.getElementById('statsDisplay');
+
+            if (csvData.length === 0) {
+                statsDisplay.style.display = 'none';
+                return;
+            }
+
+            statsDisplay.style.display = 'grid';
+
+            const numbers = csvData.map(entry => entry.number);
+            const total = csvData.length;
+            const avg = (numbers.reduce((a, b) => a + b, 0) / total).toFixed(2);
+            const min = Math.min(...numbers);
+            const max = Math.max(...numbers);
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('avgValue').textContent = avg;
+            document.getElementById('minGenerated').textContent = min;
+            document.getElementById('maxGenerated').textContent = max;
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusDisplay');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Warn before leaving if there are unsaved changes
+        window.addEventListener('beforeunload', function (e) {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+    </script>
+</body>
+</html>
